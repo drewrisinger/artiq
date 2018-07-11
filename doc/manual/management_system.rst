@@ -1,7 +1,7 @@
 Management system
 =================
 
-The management system described below is optional: experiments can be run one by one using :mod:`~artiq.frontend.artiq_run`, and the controllers can run stand-alone (without a controller manager). For their very first steps with ARTIQ or in simple or particular cases, users do not need to deploy the management system.
+The management system described below is optional: experiments can be run one by one using ``artiq_run``, and the controllers can run stand-alone (without a controller manager). For their very first steps with ARTIQ or in simple or particular cases, users do not need to deploy the management system.
 
 Components
 **********
@@ -29,8 +29,8 @@ Command-line client
 
 The command-line client connects to the master and permits modification and monitoring of the databases, monitoring the experiment schedule and log, and submitting experiments.
 
-Dashboard
----------
+Dashboard (or GUI)
+------------------
 
 The dashboard connects to the master and is the main way of interacting with it. The main features of the dashboard are scheduling of experiments, setting of their arguments, examining the schedule, displaying real-time results, and debugging TTL and DDS channels in real time.
 
@@ -40,7 +40,7 @@ Experiment scheduling
 Basics
 ------
 
-To use hardware resources more efficiently, potentially compute-intensive pre-computation and analysis phases of other experiments is executed in parallel with the body of the current experiment that accesses the hardware.
+To use hardware resources more efficiently, potentially compute-intensive pre-computation and analysis phases of other experiments are executed in parallel with the body of the current experiment that accesses the hardware.
 
 .. seealso:: These steps are implemented in :class:`~artiq.language.environment.Experiment`. However, user-written experiments should usually derive from (sub-class) :class:`artiq.language.environment.EnvExperiment`.
 
@@ -48,7 +48,7 @@ Experiments are divided into three phases that are programmed by the user:
 
 1. The **preparation** stage, that pre-fetches and pre-computes any data that necessary to run the experiment. Users may implement this stage by overloading the :meth:`~artiq.language.environment.Experiment.prepare` method. It is not permitted to access hardware in this stage, as doing so may conflict with other experiments using the same devices.
 2. The **running** stage, that corresponds to the body of the experiment, and typically accesses hardware. Users must implement this stage and overload the :meth:`~artiq.language.environment.Experiment.run` method.
-3. The **analysis** stage, where raw results collected in the running stage are post-processed and may lead to updates of the parameter database. This stage may be implemented by overloading the :meth:`~artiq.language.environment.Experiment.analyze` method.
+3. The **analysis** stage, where raw results collected in the running stage are post-processed and may lead to updates of the parameter database. This stage may be implemented by overriding the :meth:`~artiq.language.environment.Experiment.analyze` method.
 
 .. note:: Only the :meth:`~artiq.language.environment.Experiment.run` method implementation is mandatory; if the experiment does not fit into the pipelined scheduling model, it can leave one or both of the other methods empty (which is the default).
 
