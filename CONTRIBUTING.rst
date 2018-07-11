@@ -17,7 +17,7 @@ efficiently. Please consider adding the following data to your issue
 report if possible:
 
 * A clear and unique summary that fits into one line. Also check that
-  this issue has not jet been reported. If it has, add additional information there.
+  this issue has not yet been reported. If it has, add additional information there.
 * Precise steps to reproduce (list of actions that leads to the issue)
 * Expected behavior (what should happen)
 * Actual behavior (what happens instead)
@@ -32,8 +32,8 @@ report if possible:
 
 For in-depth information on bug reporting, see:
 
-http://www.chiark.greenend.org.uk/~sgtatham/bugs.html
-https://developer.mozilla.org/en-US/docs/Mozilla/QA/Bug_writing_guidelines
+* http://www.chiark.greenend.org.uk/~sgtatham/bugs.html
+* https://developer.mozilla.org/en-US/docs/Mozilla/QA/Bug_writing_guidelines
 
 
 Contributing Code
@@ -45,7 +45,7 @@ clean them up, write proper commit messages, add docstrings and unittests. Then
 that the testsuite passes. Then prepare a pull request or send patches to the
 `mailing list <https://ssl.serverraum.org/lists/listinfo/artiq>`_ to be
 discussed. Expect your contribution to be held up to coding standards (e.g. use
-``flake8`` to check yourself).
+`flake8 <http://flake8.pycqa.org/en/latest/>`_ to check yourself).
 
 Checklist for Code Contributions
 --------------------------------

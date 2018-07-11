@@ -12,7 +12,7 @@ In the previous tutorial, we used the ``artiq_run`` utility to execute our exper
 
 First, create a folder ``~/artiq-master`` and copy the file ``device_db.py`` (containing the device database) found in the ``examples/master`` directory from the ARTIQ sources. The master uses those files in the same way as ``artiq_run``.
 
-Then create a ``~/artiq-master/repository`` sub-folder to contain experiments. The master scans this ``repository`` folder to determine what experiments are available (the name of the folder can be changed using ``-r``).
+Then create a ``~/artiq-master/repository`` sub-folder to contain experiments. The master scans this ``repository`` folder to determine what experiments are available (the name of the folder can be changed using the ``-r`` flag when running ``artiq_master``, i.e. ``artiq_master -r ~/artiq-master/repository``).
 
 Create a very simple experiment in ``~/artiq-master/repository`` and save it as ``mgmt_tutorial.py``: ::
 
@@ -75,7 +75,12 @@ So far, we have used the bare filesystem for the experiment repository, without 
 
 .. note:: The workflow we will describe in this tutorial corresponds to a situation where the ARTIQ master machine is also used as a Git server where multiple users may push and pull code. The Git setup can be customized according to your needs; the main point to remember is that when scanning or submitting, the ARTIQ master uses the internal Git data (*not* any working directory that may be present) to fetch the latest *fully completed commit* at the repository's head.
 
-We will use the current ``repository`` folder as working directory for making local modifications to the experiments, move it away from the master data directory, and create a new ``repository`` folder that holds the Git data used by the master. Stop the master with Ctrl-C and enter the following commands: ::
+We will create two Git repositories: one to track local changes (the working directory), and another to collect our experiments, which will be used by ``artiq-master``. To use our current ``repository`` folder (``~/artiq-master/repository``) as the working directory for making local modifications to the experiments, we:
+
+* Move it out of the master data directory.
+* Create a new ``repository`` folder that holds the Git data used by the master.
+
+Stop the master with Ctrl-C and enter the following commands: ::
 
     $ cd ~/artiq-master
     $ mv repository ~/artiq-work
@@ -132,7 +137,7 @@ Verify the log in the GUI. If you are happy with the result, commit the new vers
     $ git commit -a -m "More enthusiasm"
     $ git push
 
-.. note:: Notice that commands other than ``git push`` are not needed anymore.
+.. note:: Notice that commands other than ``git push``, ``git add``, and ``git commit`` are not needed anymore.
 
 The master should now run the new version from its repository.
 

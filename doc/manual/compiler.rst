@@ -20,8 +20,8 @@ For a demonstration of some of these features, see the ``mandelbrot.py`` example
 
 When several instances of a user-defined class are referenced from the same kernel, every attribute must have the same type in every instance of the class.
 
-Remote procedure calls
-----------------------
+Remote procedure calls (RPCs)
+-----------------------------
 
 Kernel code can call host functions without any additional ceremony. However, such functions are assumed to return `None`, and if a value other than `None` is returned, an exception is raised. To call a host function returning a value other than `None` its return type must be annotated using the standard Python syntax, e.g.: ::
 
@@ -55,7 +55,7 @@ The Python types correspond to ARTIQ type annotations as follows:
 +---------------+-------------------------+
 
 Pitfalls
---------
+++++++++
 
 The ARTIQ compiler accepts *nearly* a strict subset of Python 3. However, by necessity there
 is a number of differences that can lead to bugs.
@@ -76,7 +76,7 @@ the builtin ``float`` type on the core device, this can lead to problems in func
 interpreter.
 
 Asynchronous RPCs
------------------
++++++++++++++++++
 
 If an RPC returns no value, it can be invoked in a way that does not block until the RPC finishes
 execution, but only until it is queued. (Submitting asynchronous RPCs too rapidly, as well as
