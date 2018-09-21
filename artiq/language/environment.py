@@ -1,5 +1,7 @@
+import abc
 from collections import OrderedDict
 from inspect import isclass
+from typing import Dict
 
 from artiq.protocols import pyon
 from artiq.language import units
@@ -176,20 +178,68 @@ class StringValue(_SimpleArgProcessor):
     pass
 
 
-class TraceArgumentManager:
+class _AbstractArgumentManager(abc.ABC):
+    """A model for Argument Managers.
+
+    Argument Managers track arguments added and process them to add them to 
+    ARTIQ GUI or to provide default values.
+    """
+
+    def __init__(self, *args, **kwargs):
+        """Initialize the Argument Manager."""
+        pass
+    
+    @abc.abstractmethod
+    def get(self, key, processor, group, tooltip):
+        """Process the given argument.
+        
+        See :meth:`.HasEnvironment.get_argument` for more details.
+        """
+        pass
+
+
+class TraceArgumentManager(_AbstractArgumentManager):
+    """Records all arguments passed without processing them."""
+
     def __init__(self):
+        """Initialize the argument trace."""
+        super().__init__()
         self.requested_args = OrderedDict()
 
     def get(self, key, processor, group, tooltip):
+        """Save the given argument without processing it.
+        
+        See :meth:`.HasEnvironment.get_argument` for more details.
+        """
         self.requested_args[key] = processor, group, tooltip
         return None
 
 
-class ProcessArgumentManager:
-    def __init__(self, unprocessed_arguments):
+class ProcessArgumentManager(_AbstractArgumentManager):
+    """Argument manager to act on arguments."""
+    def __init__(self, unprocessed_arguments: Dict):
+        """
+        Start the Process Argument Manager with arguments for future use.
+        
+        Args:
+            unprocessed_arguments (Dict): Arguments that need later processing.
+            Arguments can be anything that is accepted by an argument processor.
+        """
+
+        super.__init__()
         self.unprocessed_arguments = unprocessed_arguments
 
     def get(self, key, processor, group, tooltip):
+        """Process the given argument.
+        
+        See :meth:`.HasEnvironment.get_argument` for argument details.
+
+        Returns:
+            Value provided by `processor.process()` or `processor.default()`. 
+            Value type depends on the processor used. 
+            For example, :class:`NumberValue` will return a number (i.e. int/float)
+
+        """
         if key in self.unprocessed_arguments:
             r = processor.process(self.unprocessed_arguments[key])
         else:
@@ -201,6 +251,21 @@ class HasEnvironment:
     """Provides methods to manage the environment of an experiment (arguments,
     devices, datasets)."""
     def __init__(self, managers_or_parent, *args, **kwargs):
+        """
+        Initializes an experiment with knowledge of devices/datasets/arguments.
+
+        Environment here means having awareness of the devices, datasets, and arguments
+        that make up an experiment.
+        
+        Args:
+            managers_or_parent (Union[Tuple[device_manager, dataset_manager, 
+            argument_manager], object]): Either a tuple with 3 elements 
+            (device manager, dataset manager, & argument manager) 
+            (argument manager can be `None` if not allowing user-set arguments), 
+            or an object that has the following attributes: 
+            `__device_mgr, __dataset_mgr, __argument_mgr` 
+            args, kwargs: remaining arguments are passed to the :meth:`build` method.
+        """
         self.children = []
         if isinstance(managers_or_parent, tuple):
             self.__device_mgr = managers_or_parent[0]
@@ -217,6 +282,7 @@ class HasEnvironment:
         self.__in_build = False
 
     def register_child(self, child):
+        """Add a reference to a child class/object."""
         self.children.append(child)
 
     def build(self):
@@ -408,7 +474,7 @@ class EnvExperiment(Experiment, HasEnvironment):
 
 
 def is_experiment(o):
-    """Checks if a Python object is a top-level experiment class."""
+    """Checks if a Python object `o` is a top-level experiment class."""
     return (isclass(o)
         and issubclass(o, Experiment)
         and o is not Experiment
