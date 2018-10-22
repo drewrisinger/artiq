@@ -1,20 +1,20 @@
 import argparse
+import asyncio
+import atexit
+import collections
 import importlib.machinery
 import logging
-import sys
-import asyncio
-import collections
-import atexit
-import string
 import os
+import string
+import sys
+from typing import Sequence, Tuple, Union
 
 import numpy as np
 
+from artiq import __version__ as artiq_version
+from artiq.appdirs import user_config_dir
 from artiq.language.environment import is_experiment
 from artiq.protocols import pyon
-from artiq.appdirs import user_config_dir
-from artiq import __version__ as artiq_version
-
 
 __all__ = ["parse_arguments", "elide", "short_format", "file_import",
            "get_experiment", "add_common_args", "simple_network_args",
@@ -124,7 +124,23 @@ def add_common_args(parser: argparse.ArgumentParser):
                        help="print the ARTIQ version number")
 
 
-def simple_network_args(parser, default_port):
+def simple_network_args(parser: argparse.ArgumentParser,
+        default_port: Union[int, Sequence[Tuple[str, str, int]]]) -> None:
+    """
+    Add simple network arguments to a command-line argument parser.
+    
+    Added arguments:
+        * `--bind`
+        * `--no-localhost-bind`
+        * `--port`/`-p` or `--port-NAME` (depending on value of `default_port`)
+
+    Args:
+        parser (argparse.ArgumentParser): Parser to add arguments to.
+        default_port (Union[int, Sequence[Tuple[str, str, int]]]): Either a default port to listen on, or a sequence of tuples of (name, purpose, port) to listen for `purpose`-type connections. Example: [("control", "control", 3249)]
+    
+    Returns:
+        None
+    """
     group = parser.add_argument_group("network server")
     group.add_argument(
         "--bind", default=[], action="append",
@@ -138,10 +154,8 @@ def simple_network_args(parser, default_port):
                            help="TCP port to listen on (default: %(default)d)")
     else:
         for name, purpose, default in default_port:
-            h = ("TCP port to listen on for {} connections (default: {})"
-                 .format(purpose, default))
-            group.add_argument("--port-" + name, default=default, type=int,
-                               help=h)
+            h = ("TCP port for {} connections (default: {})".format(purpose, default))
+            group.add_argument("--port-" + name, default=default, type=int, help=h)
 
 
 class MultilineFormatter(logging.Formatter):
@@ -166,11 +180,22 @@ def multiline_log_config(level):
     root_logger.addHandler(handler)
 
 
-def init_logger(args):
+def init_logger(args: argparse.Namespace) -> NOne:
+    """Initialize logger with desired verbosity/quietness.
+
+    Uses `args.quiet` and `args.verbose` to calculate the correct logging level.
+    Defaults to :const:`logging.WARNING`.
+    """
     multiline_log_config(level=logging.WARNING + args.quiet*10 - args.verbose*10)
 
 
-def bind_address_from_args(args):
+def bind_address_from_args(args: argparse.Namespace):
+    """Return the bind address from parsed arguments.
+    
+    Returns:
+        None if "*" in args.bind. `args.bind` if `args.no_localhost_bind`. 
+        Otherwise, returns local IP (`127.0.0.1, ::1`) and `args.bind` 
+    """
     if "*" in args.bind:
         return None
     if args.no_localhost_bind:
