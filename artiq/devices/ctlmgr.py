@@ -192,20 +192,24 @@ class Controllers:
             self.active_or_queued.remove(k)
 
     def delete_all(self):
+        """Delete all active or queued controllers."""
         for name in set(self.active_or_queued):
             del self[name]
 
     async def shutdown(self):
+        """Cancel processing and gracefully shut down all active controllers."""
         self.process_task.cancel()
         for c in self.active.values():
             await c.end()
 
 
 class ControllerDB:
+    """A Database to manage local controllers."""
     def __init__(self):
         self.current_controllers = Controllers()
 
-    def set_host_filter(self, host_filter):
+    def set_host_filter(self, host_filter: str):
+        """Filter Controller Database to only recognize local (by IP) controller."""
         self.current_controllers.host_filter = host_filter
 
     def sync_struct_init(self, init):
@@ -217,13 +221,28 @@ class ControllerDB:
 
 
 class ControllerManager(TaskObject):
-    def __init__(self, server, port, retry_master):
+    """
+    Manager to provide connection between master server and local devices
+    """
+
+    def __init__(self, server: str, port: int, retry_master: float):
+        """
+        Starts the :class:`.ControllerManager`.
+        
+        Args:
+            server (str): Server IP address
+            port (int): Server TCP port
+            retry_master (float): Interval between retrying to connect to master
+        """
         self.server = server
         self.port = port
         self.retry_master = retry_master
         self.controller_db = ControllerDB()
 
     async def _do(self):
+        """
+        Connects to master server, and performs any requested tasks.
+        """
         try:
             subscriber = Subscriber("devices",
                                     self.controller_db.sync_struct_init)
