@@ -390,10 +390,11 @@ class BestEffortClient:
             self.__send(obj)
             obj = self.__recv()
         except:
-            logger.warning("connection failed while attempting "
-                           "RPC to %s:%d[%s], re-establishing connection "
+            logger.warning("failed RPC to %s:%d[%s], restarting connection "
                            "in the background",
-                           self.__host, self.__port, self.__target_name)
+                           self.__host, self.__port, self.__target_name,
+                           exc_info=True)
+            self.__socket.close()
             self.__start_conretry()
             return None
         else:
