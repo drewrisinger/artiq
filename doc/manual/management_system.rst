@@ -65,7 +65,7 @@ Priorities and timed runs
 When determining what experiment to begin executing next (i.e. entering the preparation stage), the scheduling looks at the following factors, by decreasing order of precedence:
 
 1. Experiments may be scheduled with a due date. If there is one and it is not reached yet, the experiment is not eligible for preparation.
-2. The integer priority value specified by the user.
+2. The integer priority value specified by the user (larger integer is higher priority).
 3. The due date itself. The earlier the due date, the earlier the experiment is scheduled.
 4. The run identifier (RID), an integer that is incremented at each experiment submission. This ensures that, all other things being equal, experiments are scheduled in the same order as they are submitted.
 
